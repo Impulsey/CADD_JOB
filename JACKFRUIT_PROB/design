@@ -1,1 +1,38 @@
+module mul(
+    input logic [31:0] a, 
+    input logic [31:0] b, 
+    output logic [31:0] y
+);
 
+    // Internal signals
+    logic [7:0] exp1, exp2, exp;
+    logic [23:0] m1, m2;
+    logic [22:0] fraction;
+    logic [47:0] product;
+
+    // Extract exponent and mantissa from inputs
+    always_comb begin
+        exp1 = a[30:23];
+        m1 = {1'b1, a[22:0]};
+        exp2 = b[30:23];
+        m2 = {1'b1, b[22:0]};
+    end
+
+    // Perform multiplication of mantissas
+    assign product = m1 * m2;
+
+    // Determine the resulting fraction and exponent
+    always_comb begin
+        if (product[47]) begin
+            fraction = product[46:24];
+            exp = exp1 + exp2 - 126; // Adjust exponent for normalization
+        end else begin
+            fraction = product[45:23];
+            exp = exp1 + exp2 - 127; // Adjust exponent for denormalized result
+        end
+    end
+
+    // Construct the output
+    assign y = {1'b0, exp, fraction};
+
+endmodule
