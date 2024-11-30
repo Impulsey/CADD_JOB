@@ -1,28 +1,38 @@
-module BCD_Adder_tb;
-    logic [7:0] A, B;        // Inputs
-    logic Cin;               // Carry-in
-    logic [7:0] S;           // Sum
-    logic Cout;              // Carry-out
+module BCD_Adder (
+    input logic [7:0] A,     // 8-bit BCD number
+    input logic [7:0] B,     // 8-bit BCD number
+    input logic Cin,         // 1-bit carry-in
+    output logic [7:0] S,    // 8-bit BCD sum
+    output logic Cout        // 1-bit carry-out
+);
 
-    // Instantiate the design
-    BCD_Adder uut (
-        .A(A),
-        .B(B),
-        .Cin(Cin),
-        .S(S),
-        .Cout(Cout)
-    );
+    logic [3:0] sum_low, sum_high;
+    logic carry_low, carry_high;
 
-    initial begin
-        $monitor("Time: %0t | A = %0d | B = %0d | Cin = %b | S = %0d | Cout = %b",
-                 $time, A, B, Cin, S, Cout);
-
-        // Test Cases
-        A = 8'h12; B = 8'h34; Cin = 0; #10; // No carry
-        A = 8'h49; B = 8'h37; Cin = 0; #10; // Correction needed
-        A = 8'h99; B = 8'h99; Cin = 0; #10; // Max values
-        A = 8'h23; B = 8'h45; Cin = 1; #10; // With carry-in
-
-        $finish;
+    // Lower 4 bits (least significant digit)
+    always_comb begin
+        {carry_low, sum_low} = A[3:0] + B[3:0] + Cin;
+        if (sum_low > 4'd9 || carry_low) begin
+            sum_low = sum_low + 4'd6;
+            carry_low = 1;
+        end else begin
+            carry_low = 0;
+        end
     end
+
+    // Upper 4 bits (most significant digit)
+    always_comb begin
+        {carry_high, sum_high} = A[7:4] + B[7:4] + carry_low;
+        if (sum_high > 4'd9 || carry_high) begin
+            sum_high = sum_high + 4'd6;
+            carry_high = 1;
+        end else begin
+            carry_high = 0;
+        end
+    end
+
+    // Outputs
+    assign S = {sum_high, sum_low};
+    assign Cout = carry_high;
+
 endmodule
