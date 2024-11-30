@@ -1,0 +1,28 @@
+module BCD_Adder_tb;
+    logic [7:0] A, B;        // Inputs
+    logic Cin;               // Carry-in
+    logic [7:0] S;           // Sum
+    logic Cout;              // Carry-out
+
+    // Instantiate the design
+    BCD_Adder uut (
+        .A(A),
+        .B(B),
+        .Cin(Cin),
+        .S(S),
+        .Cout(Cout)
+    );
+
+    initial begin
+        $monitor("Time: %0t | A = %0d | B = %0d | Cin = %b | S = %0d | Cout = %b",
+                 $time, A, B, Cin, S, Cout);
+
+        // Test Cases
+        A = 8'h12; B = 8'h34; Cin = 0; #10; // No carry
+        A = 8'h49; B = 8'h37; Cin = 0; #10; // Correction needed
+        A = 8'h99; B = 8'h99; Cin = 0; #10; // Max values
+        A = 8'h23; B = 8'h45; Cin = 1; #10; // With carry-in
+
+        $finish;
+    end
+endmodule
